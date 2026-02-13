@@ -55,3 +55,14 @@ def get_qbo_client_from_db(db: Session) -> QBOClient:
     if not token:
         raise RuntimeError("No QBO tokens stored yet. Run /qbo/authorize first.")
     return QBOClient(access_token=token.access_token, realm_id=token.realm_id)
+def get_report(self, report_name: str, params: dict | None = None) -> dict:
+        """
+        Call a QuickBooks Online report endpoint, e.g. ProfitAndLoss.
+
+        Example:
+            client.get_report("ProfitAndLoss", {"date_macro": "ThisFiscalYearToDate"})
+        """
+        url = f"{self.base_url}/reports/{report_name}"
+        resp = requests.get(url, headers=self._headers(), params=params or {})
+        resp.raise_for_status()
+        return resp.json()
