@@ -34,3 +34,9 @@ from .analysis.vendor_spend import vendor_spend_summary
 def get_vendor_spend(limit: int = 1000, db: Session = Depends(get_db)):
     client = get_qbo_client_from_db(db)
     return vendor_spend_summary(client, limit)
+from .analysis.customer_revenue import customer_revenue_summary
+
+@app.get("/analysis/customer-revenue")
+def get_customer_revenue(limit: int = 1000, db: Session = Depends(get_db)):
+    client = get_qbo_client_from_db(db)
+    return customer_revenue_summary(client, limit)
