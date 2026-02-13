@@ -28,3 +28,9 @@ def get_invoices_summary(limit: int = 50, db: Session = Depends(get_db)):
         return invoices_summary(client, limit=limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+from .analysis.vendor_spend import vendor_spend_summary
+
+@app.get("/analysis/vendor-spend")
+def get_vendor_spend(limit: int = 1000, db: Session = Depends(get_db)):
+    client = get_qbo_client_from_db(db)
+    return vendor_spend_summary(client, limit)
