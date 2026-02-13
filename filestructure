@@ -1,0 +1,13 @@
+qbo-agent-api/
+  requirements.txt
+  app/
+    __init__.py
+    main.py
+    config.py
+    db.py
+    models.py
+    qbo_auth.py
+    qbo_client.py
+    analysis/
+      __init__.py
+      basic_metrics.py
