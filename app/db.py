@@ -8,7 +8,7 @@ if not settings.database_url:
 
 engine = create_engine(settings.database_url, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+Base = declarative_base()   # <-- this defines Base
 
 def get_db():
     db = SessionLocal()
