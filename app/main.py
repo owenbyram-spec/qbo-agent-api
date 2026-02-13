@@ -40,3 +40,9 @@ from .analysis.customer_revenue import customer_revenue_summary
 def get_customer_revenue(limit: int = 1000, db: Session = Depends(get_db)):
     client = get_qbo_client_from_db(db)
     return customer_revenue_summary(client, limit)
+from .analysis.expense_trends import expense_trend_mom
+
+@app.get("/analysis/expense-trend")
+def get_expense_trend(limit: int = 1000, db: Session = Depends(get_db)):
+    client = get_qbo_client_from_db(db)
+    return expense_trend_mom(client, limit)
