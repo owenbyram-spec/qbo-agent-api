@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi import Request
 from sqlalchemy.orm import Session
 
+# ----- Database + Core Imports -----
 from .db import Base, engine, get_db
 from .qbo_auth import router as qbo_auth_router
 from .qbo_client import get_qbo_client_from_db
 
-# Analysis imports
+# ----- Analysis Modules -----
 from .analysis.basic_metrics import invoices_summary
 from .analysis.vendor_spend import vendor_spend_summary
 from .analysis.customer_revenue import customer_revenue_summary
@@ -15,31 +18,38 @@ from .analysis.cogs_anomaly import cogs_anomalies
 from .analysis.cashflow_forecast import cashflow_forecast
 from .analysis.ar_aging import ar_aging
 from .analysis.anomalies import transaction_anomalies
-from .assistant import router as assistant_router
-app.include_router(assistant_router)
 
-# Create DB tables at startup
+# ----- Optional AI Assistant (only if assistant.py exists) -----
+try:
+    from .assistant import router as assistant_router
+    ASSISTANT_ENABLED = True
+except ImportError:
+    ASSISTANT_ENABLED = False
+
+# ----- App Initialization -----
 Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="QBO Financial Analysis Agent")
 
-# Include OAuth routes (/qbo/authorize and /qbo/callback)
+# ----- Routers -----
 app.include_router(qbo_auth_router)
 
+if ASSISTANT_ENABLED:
+    app.include_router(assistant_router)
+
+# ----- Basic Routes -----
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
+# ----- Analysis Routes -----
+
 @app.get("/analysis/invoices-summary")
 def get_invoices_summary(limit: int = 50, db: Session = Depends(get_db)):
-    """
-    Simple endpoint to test DB + QBO + analysis.
-    """
     try:
         client = get_qbo_client_from_db(db)
-        return invoices_summary(client, limit=limit)
+        return invoices_summary(client, limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -90,7 +100,7 @@ def get_ar_aging(limit: int = 1000, db: Session = Depends(get_db)):
 def get_transaction_anomalies(
     limit: int = 1000,
     z_threshold: float = 2.5,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
     client = get_qbo_client_from_db(db)
-    return transaction_anomalies(client, limit=limit, z_threshold=z_threshold)
+    return transaction_anomalies(client, limit, z_threshold)
