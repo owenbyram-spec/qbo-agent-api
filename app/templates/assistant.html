@@ -2,29 +2,31 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>AI Financial Assistant</title>
+    <title>Peregrine CFO</title>
 
     <!-- Modern font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap
 
     <style>
         :root {
-            --bg-main: #020617;
-            --bg-panel: #020617;
-            --bg-subpanel: #0f172a;
+            --bg-main: #050509;
+            --bg-panel: #050509;
+            --bg-subpanel: #0b0f19;
             --border-subtle: #1f2937;
-            --text-main: #e5e7eb;
-            --text-muted: #94a3b8;
-            --accent: #6366f1;
-            --accent-2: #8b5cf6;
-            --accent-soft: rgba(99,102,241,0.25);
-            --user-bubble-gradient: linear-gradient(135deg, #4f46e5, #9333ea);
-            --assistant-bubble: #111827;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+
+            /* Orange accent palette */
+            --accent: #f97316;
+            --accent-2: #ea580c;
+            --accent-soft: rgba(249,115,22,0.25);
+
+            /* Chat bubbles */
+            --user-bubble-gradient: linear-gradient(135deg, #f97316, #ea580c);
+            --assistant-bubble: #0b0f19;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -44,11 +46,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #020617;
+            background: #050509;
             border-radius: 12px;
             padding: 14px 18px;
             border: 1px solid var(--border-subtle);
-            box-shadow: 0 20px 25px -20px rgba(15,23,42,0.8);
+            box-shadow: 0 20px 25px -20px rgba(15,23,42,0.9);
             margin-bottom: 16px;
         }
 
@@ -71,7 +73,12 @@
         .top-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+        }
+
+        .company-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
         .company-select {
@@ -90,15 +97,12 @@
             border: none;
             font-size: 0.85rem;
             font-weight: 600;
-            background: var(--user-bubble-gradient);
+            background: linear-gradient(135deg, #f97316, #ea580c);
             color: white;
-            box-shadow: 0 10px 20px rgba(79,70,229,0.5);
+            box-shadow: 0 10px 20px rgba(249,115,22,0.5);
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* Main layout */
         .content-shell {
@@ -115,14 +119,12 @@
         }
 
         /* Prompts panel */
-        .prompts-panel {
-            padding: 14px 16px;
-        }
+        .prompts-panel { padding: 14px 16px; }
 
         .prompts-title {
             font-size: 0.95rem;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .prompts-subtitle {
@@ -131,9 +133,7 @@
             margin-bottom: 10px;
         }
 
-        .prompt-group {
-            margin-top: 10px;
-        }
+        .prompt-group { margin-top: 10px; }
 
         .prompt-group-title {
             font-size: 0.75rem;
@@ -145,18 +145,18 @@
 
         .prompt-chip {
             display: inline-block;
-            margin: 4px 4px 4px 0;
-            padding: 6px 10px;
+            margin: 6px 6px 0 0;
+            padding: 7px 12px;
             font-size: 0.8rem;
             border-radius: 999px;
-            border: 1px solid var(--border-subtle);
-            background: rgba(15,23,42,0.9);
+            border: none; /* ⛔ no border around prompts */
+            background: rgba(15,23,42,0.95);
             color: var(--text-main);
             cursor: pointer;
         }
 
         .prompt-chip:hover {
-            border-color: var(--accent);
+            background: rgba(249,115,22,0.18);
             box-shadow: 0 0 0 1px var(--accent-soft);
         }
 
@@ -167,9 +167,7 @@
             padding: 14px 16px;
         }
 
-        .chat-header {
-            margin-bottom: 8px;
-        }
+        .chat-header { margin-bottom: 8px; }
 
         .chat-title {
             font-size: 1.1rem;
@@ -187,9 +185,10 @@
             margin-top: 10px;
             padding: 12px;
             border-radius: 10px;
-            background: radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 40%),
-                        radial-gradient(circle at bottom right, rgba(129,140,248,0.16), transparent 40%),
-                        #020617;
+            background:
+                radial-gradient(circle at top left, rgba(249,115,22,0.16), transparent 40%),
+                radial-gradient(circle at bottom right, rgba(248,250,252,0.06), transparent 40%),
+                #020617;
             border: 1px solid var(--border-subtle);
             overflow-y: auto;
         }
@@ -208,8 +207,8 @@
         .message.user {
             margin-left: auto;
             background: var(--user-bubble-gradient);
-            color: #f9fafb;
-            box-shadow: 0 10px 30px rgba(88,28,135,0.7);
+            color: #fff7ed;
+            box-shadow: 0 10px 30px rgba(249,115,22,0.5);
         }
 
         .message.assistant {
@@ -217,6 +216,32 @@
             background: var(--assistant-bubble);
             color: var(--text-main);
             border: 1px solid var(--border-subtle);
+        }
+
+        /* Typing bubble (white) */
+        .message.typing {
+            background: #f9fafb;
+            color: #020617;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #020617;
+            opacity: 0.5;
+            animation: typingBlink 1s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes typingBlink {
+            0%, 60%, 100% { opacity: 0.2; transform: translateY(0px); }
+            30% { opacity: 0.9; transform: translateY(-2px); }
         }
 
         .chat-input-row {
@@ -251,13 +276,14 @@
         <!-- TOP BAR -->
         <div class="top-bar">
             <div class="top-left">
-                <div class="top-title">AI Financial Assistant</div>
+                <div class="top-title">Peregrine CFO</div>
                 <div class="top-subtitle">
-                    Unified view of your QuickBooks companies. Ask questions; I read the data and explain what’s going on.
+                    Unified view of your QuickBooks companies. Ask questions; Peregrine reads the data and explains what’s going on.
                 </div>
             </div>
 
             <div class="top-right">
+                <span class="company-label">Company selector</span>
                 <select id="companySelect" class="company-select" onchange="onCompanyChange()">
                     <option value="">Loading companies…</option>
                 </select>
@@ -272,11 +298,11 @@
             <div class="panel prompts-panel">
                 <div class="prompts-title">Suggested prompts</div>
                 <div class="prompts-subtitle">
-                    Click to insert a question into the chat box.
+                    What do you want to dig into?
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Vendor & Spend</div>
+                    <div class="prompt-group-title">Vendor &amp; Spend</div>
                     <div class="prompt-chip" onclick="usePrompt('Who are my top 5 vendors by spend this month?')">
                         Top 5 vendors this month
                     </div>
@@ -289,7 +315,7 @@
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Customers & Revenue</div>
+                    <div class="prompt-group-title">Customers &amp; Revenue</div>
                     <div class="prompt-chip" onclick="usePrompt('Who are my most profitable customers and how has that changed over time?')">
                         Most profitable customers
                     </div>
@@ -299,7 +325,7 @@
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Margins & COGS</div>
+                    <div class="prompt-group-title">Margins &amp; COGS</div>
                     <div class="prompt-chip" onclick="usePrompt('Where have my gross margins eroded compared to last quarter?')">
                         Margin erosion
                     </div>
@@ -309,17 +335,17 @@
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Cash Flow & AR</div>
+                    <div class="prompt-group-title">Cash Flow &amp; AR</div>
                     <div class="prompt-chip" onclick="usePrompt('Summarize my month-over-month cash flow trend and any risks you see.')">
-                        Cash flow trend & risks
+                        Cash flow trend &amp; risks
                     </div>
                     <div class="prompt-chip" onclick="usePrompt('Analyze my accounts receivable aging and identify high-risk buckets.')">
-                        AR aging & risk
+                        AR aging &amp; risk
                     </div>
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Anomalies & Alerts</div>
+                    <div class="prompt-group-title">Anomalies &amp; Alerts</div>
                     <div class="prompt-chip" onclick="usePrompt('Scan for any unusual or suspicious transactions in the last 30 days.')">
                         Unusual transactions
                     </div>
@@ -341,7 +367,7 @@
                 <div id="messages" class="chat-messages"></div>
 
                 <div class="chat-input-row">
-                    <textarea id="questionInput" placeholder="Ask me anything about your QuickBooks data…"></textarea>
+                    <textarea id="questionInput" placeholder="Ask Peregrine CFO anything about your QuickBooks data…"></textarea>
                     <button class="btn" id="askButton" onclick="sendQuestion()">Ask</button>
                 </div>
 
@@ -352,6 +378,7 @@
 
     <script>
         let currentRealmId = null;
+        let typingBubble = null;
 
         async function loadCompanies() {
             try {
@@ -375,15 +402,14 @@
                 data.forEach((c, idx) => {
                     const opt = document.createElement('option');
                     opt.value = c.realm_id;
-                    opt.textContent = c.realm_id;
+                    opt.textContent = c.name; // company name
                     if (idx === 0) {
                         opt.selected = true;
                         currentRealmId = c.realm_id;
+                        status.textContent = `Active company: ${c.name}`;
                     }
                     select.appendChild(opt);
                 });
-
-                status.textContent = `Active company: ${currentRealmId}`;
             } catch (err) {
                 console.error(err);
                 document.getElementById('companyStatus').textContent =
@@ -399,9 +425,10 @@
             const select = document.getElementById('companySelect');
             currentRealmId = select.value || null;
             const status = document.getElementById('companyStatus');
+            const selectedName = select.options[select.selectedIndex]?.text || '';
 
-            if (currentRealmId) {
-                status.textContent = `Active company: ${currentRealmId}`;
+            if (currentRealmId && selectedName) {
+                status.textContent = `Active company: ${selectedName}`;
             } else {
                 status.textContent = 'No company selected.';
             }
@@ -414,6 +441,33 @@
             div.textContent = text;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
+        }
+
+        function showTypingBubble() {
+            const messages = document.getElementById('messages');
+            typingBubble = document.createElement('div');
+            typingBubble.className = 'message assistant typing';
+
+            const dot1 = document.createElement('div');
+            const dot2 = document.createElement('div');
+            const dot3 = document.createElement('div');
+            dot1.className = 'typing-dot';
+            dot2.className = 'typing-dot';
+            dot3.className = 'typing-dot';
+
+            typingBubble.appendChild(dot1);
+            typingBubble.appendChild(dot2);
+            typingBubble.appendChild(dot3);
+
+            messages.appendChild(typingBubble);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTypingBubble() {
+            if (typingBubble && typingBubble.parentNode) {
+                typingBubble.parentNode.removeChild(typingBubble);
+            }
+            typingBubble = null;
         }
 
         function usePrompt(text) {
@@ -440,6 +494,8 @@
             askButton.disabled = true;
             askButton.textContent = 'Thinking…';
 
+            showTypingBubble();
+
             try {
                 const res = await fetch('/assistant/query', {
                     method: 'POST',
@@ -451,6 +507,8 @@
                 });
 
                 const data = await res.json();
+                removeTypingBubble();
+
                 if (data.answer) {
                     appendMessage('assistant', data.answer);
                 } else {
@@ -458,7 +516,8 @@
                 }
             } catch (err) {
                 console.error(err);
-                appendMessage('assistant', 'Error contacting AI assistant.');
+                removeTypingBubble();
+                appendMessage('assistant', 'Error contacting Peregrine CFO assistant.');
             } finally {
                 askButton.disabled = false;
                 askButton.textContent = 'Ask';
