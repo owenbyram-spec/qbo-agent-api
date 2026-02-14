@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Financial Assistant</title>
+</head>
+<body>
+    <h1>AI Financial Assistant</h1>
+
+    <label>Realm ID:</label>
+    <input id="realm_id" type="text" placeholder="Enter realmId..." />
+
+    <br><br>
+
+    <label>Ask a question:</label><br>
+    <textarea id="question" rows="4" cols="50"></textarea>
+
+    <br><br>
+
+    <button onclick="askAI()">Ask</button>
+
+    <h2>Response:</h2>
+    <pre id="responseBox"></pre>
+
+    <script>
+        async function askAI() {
+            const realm_id = document.getElementById("realm_id").value;
+            const question = document.getElementById("question").value;
+
+            const response = await fetch("/assistant/query", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ realm_id, question })
+            });
+
+            const data = await response.json();
+            document.getElementById("responseBox").textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+
+</body>
+</html>
