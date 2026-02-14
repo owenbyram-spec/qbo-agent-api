@@ -14,28 +14,38 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class AssistantQuery(BaseModel):
     question: str
-    realm_id: str
+    realm_id: str  # kept for future multi-company; not used yet
 
 @router.post("/query")
 def ask_ai(body: AssistantQuery, db: Session = Depends(get_db)):
-    realm_id = body.realm_id
-    question = body.question
+    # For now, ignore realm_id and just use the first (sandbox) company from DB
+    qbo = get_qbo_client_from_db(db)
 
-    qbo = get_qbo_client_from_db(db, realm_id)
-
-    # Minimal example analysis
+    # Run one analysis as an example (vendor spend)
     vendor_data = vendor_spend_summary(qbo)
 
-    # LLM reasoning
+    # Ask the LLM to interpret this data in light of the question
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-4o-mini",  # or "gpt-4.1" if your account has it
         messages=[
-            {"role": "system",
-             "content": "You are an expert financial analyst."},
-            {"role": "user",
-             "content": f"Question: {question}\nData: {vendor_data}"}
-        ]
+            {
+                "role": "system",
+                "content": (
+                    "You are an expert financial analyst. "
+                    "Use the provided QuickBooks data to answer the user's question. "
+                    "Be concise, clear, and business-focused."
+                ),
+            },
+            {
+                "role": "user",
+                "content": f"User question: {body.question}\n\nVendor spend data: {vendor_data}",
+            },
+        ],
     )
 
     answer = response.choices[0].message["content"]
-    return {"answer": answer, "data_used": vendor_data}
+
+    return {
+        "answer": answer,
+        "data_used": vendor_data,
+    }
