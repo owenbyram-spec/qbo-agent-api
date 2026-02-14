@@ -31,7 +31,7 @@ class QBOClient:
 
     def get_company_info(self) -> Dict[str, Any]:
         """
-        Fetch high-level company info.
+        Fetch high-level company info, including CompanyName.
         """
         url = f"{self.base_url}/companyinfo/{self.realm_id}"
         resp = requests.get(url, headers=self._headers())
@@ -78,8 +78,8 @@ def get_qbo_client_from_db(
     Return a QBOClient for the given realm_id, or the first token if realm_id is None.
 
     This supports:
-      - Existing single-company usage (no realm_id passed)
-      - Multi-company selection (realm_id provided from the UI or assistant)
+      - Single-company usage (no realm_id passed)
+      - Multi-company switching (realm_id provided from the UI or assistant)
     """
     query = db.query(QBOToken)
 
