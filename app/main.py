@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi import Request
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 # ----- Database + Core Imports -----
@@ -36,15 +36,17 @@ app.include_router(qbo_auth_router)
 if ASSISTANT_ENABLED:
     app.include_router(assistant_router)
 
-# ----- Basic Routes -----
+# ----- Templates (HTML UI) -----
+templates = Jinja2Templates(directory="app/templates")
 
+
+# ----- Basic Routes -----
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
 # ----- Analysis Routes -----
-
 @app.get("/analysis/invoices-summary")
 def get_invoices_summary(limit: int = 50, db: Session = Depends(get_db)):
     try:
@@ -104,11 +106,9 @@ def get_transaction_anomalies(
 ):
     client = get_qbo_client_from_db(db)
     return transaction_anomalies(client, limit, z_threshold)
-    from fastapi.templating import Jinja2Templates
-from fastapi import Request
 
-templates = Jinja2Templates(directory="app/templates")
 
+# ----- HTML UI -----
 @app.get("/assistant/ui")
 def assistant_ui(request: Request):
     return templates.TemplateResponse("assistant.html", {"request": request})
