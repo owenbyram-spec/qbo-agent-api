@@ -1,40 +1,310 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8" />
     <title>AI Financial Assistant</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .app-shell {
+            max-width: 1200px;
+            margin: 24px auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+            padding: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: #4f46e5;
+            color: #ffffff;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            color: #374151;
+            margin-top: 20px;
+            margin-bottom: 6px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 0.9rem;
+        }
+
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+
+        .chat-header {
+            margin-bottom: 10px;
+        }
+
+        .chat-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .chat-subtitle {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin: 8px 0;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            font-size: 0.95rem;
+        }
+
+        .message.user {
+            background: #4f46e5;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: #e5e7eb;
+            color: #111827;
+            margin-right: auto;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 0.95rem;
+            height: 60px;
+        }
+
+        .status-line {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>AI Financial Assistant</h1>
 
-    <label>Realm ID:</label>
-    <input id="realm_id" type="text" placeholder="Enter realmId..." />
+    <div class="app-shell">
 
-    <br><br>
+        <!-- Sidebar -->
+        <div class="panel">
+            <div class="sidebar-title">QuickBooks Companies</div>
+            <div class="sidebar-subtitle">
+                Connect companies and switch between them.  
+                You have full access to all connected companies.
+            </div>
 
-    <label>Ask a question:</label><br>
-    <textarea id="question" rows="4" cols="50"></textarea>
+            <button class="btn" onclick="connectQuickBooks()">
+                Connect to QuickBooks
+            </button>
 
-    <br><br>
+            <div class="field-label">Connected Companies (realmIds)</div>
+            <select id="companySelect" onchange="onCompanyChange()">
+                <option>Loading...</option>
+            </select>
 
-    <button onclick="askAI()">Ask</button>
+            <div id="companyStatus" class="status-line">Loading companies…</div>
+        </div>
 
-    <h2>Response:</h2>
-    <pre id="responseBox"></pre>
+        <!-- Chat panel -->
+        <div class="panel chat-panel">
+
+            <div class="chat-header">
+                <div class="chat-title">AI Financial Assistant</div>
+                <div class="chat-subtitle">Ask anything about your QuickBooks data.</div>
+            </div>
+
+            <div id="messages" class="chat-messages"></div>
+
+            <div class="chat-input-row">
+                <textarea id="questionInput" placeholder="Ask a question like: 'Why did my COGS spike last month?'"></textarea>
+                <button class="btn" id="askButton" onclick="sendQuestion()">Ask</button>
+            </div>
+
+            <div id="assistantStatus" class="status-line"></div>
+        </div>
+    </div>
 
     <script>
-        async function askAI() {
-            const realm_id = document.getElementById("realm_id").value;
-            const question = document.getElementById("question").value;
+        let currentRealmId = null;
 
-            const response = await fetch("/assistant/query", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ realm_id, question })
-            });
+        async function loadCompanies() {
+            try {
+                const res = await fetch('/companies');
+                const data = await res.json();
+                const select = document.getElementById('companySelect');
+                const status = document.getElementById('companyStatus');
 
-            const data = await response.json();
-            document.getElementById("responseBox").textContent = JSON.stringify(data, null, 2);
+                select.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.textContent = 'No companies connected';
+                    opt.value = '';
+                    select.appendChild(opt);
+
+                    status.textContent = 'Use "Connect to QuickBooks" to add your first company.';
+                    currentRealmId = null;
+                    return;
+                }
+
+                data.forEach((c, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = c.realm_id;
+                    opt.textContent = c.realm_id;
+
+                    if (idx === 0) {
+                        opt.selected = true;
+                        currentRealmId = c.realm_id;
+                    }
+
+                    select.appendChild(opt);
+                });
+
+                status.textContent = `Using company realmId: ${currentRealmId}`;
+
+            } catch (err) {
+                document.getElementById('companyStatus').textContent =
+                    'Error loading companies.';
+            }
         }
+
+        function onCompanyChange() {
+            const select = document.getElementById('companySelect');
+            currentRealmId = select.value;
+
+            document.getElementById('companyStatus').textContent =
+                `Using company realmId: ${currentRealmId}`;
+        }
+
+        function connectQuickBooks() {
+            window.location.href = '/qbo/authorize';
+        }
+
+        function appendMessage(role, text) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+
+            div.className = 'message ' + role;
+            div.textContent = text;
+
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        async function sendQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            const status = document.getElementById('assistantStatus');
+            const askButton = document.getElementById('askButton');
+
+            if (!currentRealmId) {
+                status.textContent = 'Please connect a QuickBooks company first.';
+                return;
+            }
+            if (!question) {
+                status.textContent = 'Please type a question.';
+                return;
+            }
+
+            appendMessage('user', question);
+            document.getElementById('questionInput').value = '';
+
+            askButton.disabled = true;
+            askButton.textContent = 'Thinking…';
+
+            try {
+                const response = await fetch('/assistant/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        realm_id: currentRealmId,
+                        question: question
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.answer) {
+                    appendMessage('assistant', data.answer);
+                } else {
+                    appendMessage('assistant', JSON.stringify(data, null, 2));
+                }
+
+            } catch {
+                appendMessage('assistant', 'Error: Unable to reach the assistant.');
+            }
+
+            askButton.disabled = false;
+            askButton.textContent = 'Ask';
+        }
+
+        window.onload = loadCompanies;
     </script>
 
 </body>
