@@ -4,52 +4,95 @@
     <meta charset="UTF-8" />
     <title>AI Financial Assistant</title>
 
+    <!-- Modern font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg-main: #020617;
+            --bg-panel: #020617;
+            --bg-subpanel: #0f172a;
+            --border-subtle: #1f2937;
+            --text-main: #e5e7eb;
+            --text-muted: #94a3b8;
+            --accent: #6366f1;
+            --accent-2: #8b5cf6;
+            --accent-soft: rgba(99,102,241,0.25);
+            --user-bubble-gradient: linear-gradient(135deg, #4f46e5, #9333ea);
+            --assistant-bubble: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background-color: #f3f4f6;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
         }
 
         .app-shell {
-            max-width: 1200px;
+            max-width: 1300px;
             margin: 24px auto;
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 20px;
+            padding: 0 12px;
         }
 
-        .panel {
-            background: #ffffff;
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #020617;
             border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(15,23,42,0.08);
-            padding: 20px;
+            padding: 14px 18px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 25px -20px rgba(15,23,42,0.8);
+            margin-bottom: 16px;
         }
 
-        .sidebar-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+        .top-left {
+            display: flex;
+            flex-direction: column;
         }
 
-        .sidebar-subtitle {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-bottom: 20px;
+        .top-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .top-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .company-select {
+            padding: 8px 10px;
+            background: var(--bg-subpanel);
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 0.85rem;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 14px;
+            cursor: pointer;
+            padding: 8px 14px;
             border-radius: 999px;
             border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            background: #4f46e5;
-            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--user-bubble-gradient);
+            color: white;
+            box-shadow: 0 10px 20px rgba(79,70,229,0.5);
         }
 
         .btn:disabled {
@@ -57,71 +100,123 @@
             cursor: not-allowed;
         }
 
-        .field-label {
-            font-size: 0.85rem;
-            color: #374151;
-            margin-top: 20px;
-            margin-bottom: 6px;
+        /* Main layout */
+        .content-shell {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 16px;
         }
 
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-            font-size: 0.9rem;
+        .panel {
+            background: var(--bg-panel);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 30px -22px rgba(15,23,42,0.9);
         }
 
-        .chat-panel {
-            display: flex;
-            flex-direction: column;
-            height: 80vh;
+        /* Prompts panel */
+        .prompts-panel {
+            padding: 14px 16px;
         }
 
-        .chat-header {
+        .prompts-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .prompts-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
             margin-bottom: 10px;
         }
 
-        .chat-title {
-            font-size: 1.4rem;
-            font-weight: 700;
+        .prompt-group {
+            margin-top: 10px;
+        }
+
+        .prompt-group-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
             margin-bottom: 4px;
         }
 
+        .prompt-chip {
+            display: inline-block;
+            margin: 4px 4px 4px 0;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            background: rgba(15,23,42,0.9);
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .prompt-chip:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent-soft);
+        }
+
+        /* Chat panel */
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            padding: 14px 16px;
+        }
+
+        .chat-header {
+            margin-bottom: 8px;
+        }
+
+        .chat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
         .chat-subtitle {
-            font-size: 0.85rem;
-            color: #6b7280;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
         .chat-messages {
             flex: 1;
-            overflow-y: auto;
-            background: #f9fafb;
-            border-radius: 10px;
+            margin-top: 10px;
             padding: 12px;
-            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: radial-gradient(circle at top left, rgba(56,189,248,0.2), transparent 40%),
+                        radial-gradient(circle at bottom right, rgba(129,140,248,0.16), transparent 40%),
+                        #020617;
+            border: 1px solid var(--border-subtle);
+            overflow-y: auto;
         }
 
         .message {
-            max-width: 80%;
+            max-width: 75%;
             padding: 10px 14px;
-            border-radius: 12px;
-            margin: 8px 0;
-            white-space: pre-wrap;
-            line-height: 1.4;
+            border-radius: 18px;
+            margin: 10px 0;
             font-size: 0.95rem;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .message.user {
-            background: #4f46e5;
-            color: white;
             margin-left: auto;
+            background: var(--user-bubble-gradient);
+            color: #f9fafb;
+            box-shadow: 0 10px 30px rgba(88,28,135,0.7);
         }
 
         .message.assistant {
-            background: #e5e7eb;
-            color: #111827;
             margin-right: auto;
+            background: var(--assistant-bubble);
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
         }
 
         .chat-input-row {
@@ -135,59 +230,123 @@
             resize: none;
             padding: 10px 12px;
             border-radius: 10px;
-            border: 1px solid #d1d5db;
-            font-size: 0.95rem;
-            height: 60px;
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-subpanel);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            height: 64px;
         }
 
         .status-line {
             margin-top: 6px;
-            font-size: 0.8rem;
-            color: #6b7280;
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
     </style>
 </head>
 
 <body>
-
     <div class="app-shell">
 
-        <!-- Sidebar -->
-        <div class="panel">
-            <div class="sidebar-title">QuickBooks Companies</div>
-            <div class="sidebar-subtitle">
-                Connect companies and switch between them.  
-                You have full access to all connected companies.
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="top-left">
+                <div class="top-title">AI Financial Assistant</div>
+                <div class="top-subtitle">
+                    Unified view of your QuickBooks companies. Ask questions; I read the data and explain what’s going on.
+                </div>
             </div>
 
-            <button class="btn" onclick="connectQuickBooks()">
-                Connect to QuickBooks
-            </button>
-
-            <div class="field-label">Connected Companies (realmIds)</div>
-            <select id="companySelect" onchange="onCompanyChange()">
-                <option>Loading...</option>
-            </select>
-
-            <div id="companyStatus" class="status-line">Loading companies…</div>
+            <div class="top-right">
+                <select id="companySelect" class="company-select" onchange="onCompanyChange()">
+                    <option value="">Loading companies…</option>
+                </select>
+                <button class="btn" onclick="connectQuickBooks()">Connect to QuickBooks</button>
+            </div>
         </div>
 
-        <!-- Chat panel -->
-        <div class="panel chat-panel">
+        <!-- MAIN CONTENT -->
+        <div class="content-shell">
 
-            <div class="chat-header">
-                <div class="chat-title">AI Financial Assistant</div>
-                <div class="chat-subtitle">Ask anything about your QuickBooks data.</div>
+            <!-- Suggested Prompts Panel -->
+            <div class="panel prompts-panel">
+                <div class="prompts-title">Suggested prompts</div>
+                <div class="prompts-subtitle">
+                    Click to insert a question into the chat box.
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-group-title">Vendor & Spend</div>
+                    <div class="prompt-chip" onclick="usePrompt('Who are my top 5 vendors by spend this month?')">
+                        Top 5 vendors this month
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('Has my vendor concentration risk increased over the last 3 months?')">
+                        Vendor concentration risk
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('Which vendors have the largest month-over-month spend increase?')">
+                        Vendors with biggest increases
+                    </div>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-group-title">Customers & Revenue</div>
+                    <div class="prompt-chip" onclick="usePrompt('Who are my most profitable customers and how has that changed over time?')">
+                        Most profitable customers
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('Which customers drove the majority of revenue last quarter?')">
+                        Revenue concentration by customer
+                    </div>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-group-title">Margins & COGS</div>
+                    <div class="prompt-chip" onclick="usePrompt('Where have my gross margins eroded compared to last quarter?')">
+                        Margin erosion
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('Highlight any anomalies in COGS over the last 6 months.')">
+                        COGS anomalies
+                    </div>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-group-title">Cash Flow & AR</div>
+                    <div class="prompt-chip" onclick="usePrompt('Summarize my month-over-month cash flow trend and any risks you see.')">
+                        Cash flow trend & risks
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('Analyze my accounts receivable aging and identify high-risk buckets.')">
+                        AR aging & risk
+                    </div>
+                </div>
+
+                <div class="prompt-group">
+                    <div class="prompt-group-title">Anomalies & Alerts</div>
+                    <div class="prompt-chip" onclick="usePrompt('Scan for any unusual or suspicious transactions in the last 30 days.')">
+                        Unusual transactions
+                    </div>
+                    <div class="prompt-chip" onclick="usePrompt('What are the top 3 issues I should focus on based on the latest data?')">
+                        Top 3 issues to focus on
+                    </div>
+                </div>
             </div>
 
-            <div id="messages" class="chat-messages"></div>
+            <!-- Chat Panel -->
+            <div class="panel chat-panel">
+                <div class="chat-header">
+                    <div class="chat-title">Conversation</div>
+                    <div class="chat-subtitle" id="companyStatus">
+                        No company selected yet. Connect to QuickBooks above.
+                    </div>
+                </div>
 
-            <div class="chat-input-row">
-                <textarea id="questionInput" placeholder="Ask a question like: 'Why did my COGS spike last month?'"></textarea>
-                <button class="btn" id="askButton" onclick="sendQuestion()">Ask</button>
+                <div id="messages" class="chat-messages"></div>
+
+                <div class="chat-input-row">
+                    <textarea id="questionInput" placeholder="Ask me anything about your QuickBooks data…"></textarea>
+                    <button class="btn" id="askButton" onclick="sendQuestion()">Ask</button>
+                </div>
+
+                <div class="status-line" id="assistantStatus"></div>
             </div>
-
-            <div id="assistantStatus" class="status-line"></div>
         </div>
     </div>
 
@@ -205,12 +364,11 @@
 
                 if (!data || data.length === 0) {
                     const opt = document.createElement('option');
-                    opt.textContent = 'No companies connected';
                     opt.value = '';
+                    opt.textContent = 'No companies connected';
                     select.appendChild(opt);
-
-                    status.textContent = 'Use "Connect to QuickBooks" to add your first company.';
                     currentRealmId = null;
+                    status.textContent = 'No companies connected. Use “Connect to QuickBooks” to add one.';
                     return;
                 }
 
@@ -218,48 +376,55 @@
                     const opt = document.createElement('option');
                     opt.value = c.realm_id;
                     opt.textContent = c.realm_id;
-
                     if (idx === 0) {
                         opt.selected = true;
                         currentRealmId = c.realm_id;
                     }
-
                     select.appendChild(opt);
                 });
 
-                status.textContent = `Using company realmId: ${currentRealmId}`;
-
+                status.textContent = `Active company: ${currentRealmId}`;
             } catch (err) {
+                console.error(err);
                 document.getElementById('companyStatus').textContent =
-                    'Error loading companies.';
+                    'Error loading companies from backend.';
             }
-        }
-
-        function onCompanyChange() {
-            const select = document.getElementById('companySelect');
-            currentRealmId = select.value;
-
-            document.getElementById('companyStatus').textContent =
-                `Using company realmId: ${currentRealmId}`;
         }
 
         function connectQuickBooks() {
             window.location.href = '/qbo/authorize';
         }
 
+        function onCompanyChange() {
+            const select = document.getElementById('companySelect');
+            currentRealmId = select.value || null;
+            const status = document.getElementById('companyStatus');
+
+            if (currentRealmId) {
+                status.textContent = `Active company: ${currentRealmId}`;
+            } else {
+                status.textContent = 'No company selected.';
+            }
+        }
+
         function appendMessage(role, text) {
             const messages = document.getElementById('messages');
             const div = document.createElement('div');
-
             div.className = 'message ' + role;
             div.textContent = text;
-
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
         }
 
+        function usePrompt(text) {
+            const input = document.getElementById('questionInput');
+            input.value = text;
+            input.focus();
+        }
+
         async function sendQuestion() {
-            const question = document.getElementById('questionInput').value.trim();
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
             const status = document.getElementById('assistantStatus');
             const askButton = document.getElementById('askButton');
 
@@ -267,19 +432,16 @@
                 status.textContent = 'Please connect a QuickBooks company first.';
                 return;
             }
-            if (!question) {
-                status.textContent = 'Please type a question.';
-                return;
-            }
+            if (!question) return;
 
             appendMessage('user', question);
-            document.getElementById('questionInput').value = '';
-
+            input.value = '';
+            status.textContent = '';
             askButton.disabled = true;
             askButton.textContent = 'Thinking…';
 
             try {
-                const response = await fetch('/assistant/query', {
+                const res = await fetch('/assistant/query', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -288,24 +450,22 @@
                     })
                 });
 
-                const data = await response.json();
-
+                const data = await res.json();
                 if (data.answer) {
                     appendMessage('assistant', data.answer);
                 } else {
                     appendMessage('assistant', JSON.stringify(data, null, 2));
                 }
-
-            } catch {
-                appendMessage('assistant', 'Error: Unable to reach the assistant.');
+            } catch (err) {
+                console.error(err);
+                appendMessage('assistant', 'Error contacting AI assistant.');
+            } finally {
+                askButton.disabled = false;
+                askButton.textContent = 'Ask';
             }
-
-            askButton.disabled = false;
-            askButton.textContent = 'Ask';
         }
 
         window.onload = loadCompanies;
     </script>
-
 </body>
 </html>
