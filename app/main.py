@@ -1,14 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-# ----- Database + Core Imports -----
 from .db import Base, engine, get_db
 from .qbo_auth import router as qbo_auth_router
-from .qbo_client import get_qbo_client_from_db
+from .qbo_client import get_qbo_client_from_db, QBOClient
+from .models import QBOToken
 
-# ----- Analysis Modules -----
+# Analysis modules
 from .analysis.basic_metrics import invoices_summary
 from .analysis.vendor_spend import vendor_spend_summary
 from .analysis.customer_revenue import customer_revenue_summary
@@ -19,34 +18,65 @@ from .analysis.cashflow_forecast import cashflow_forecast
 from .analysis.ar_aging import ar_aging
 from .analysis.anomalies import transaction_anomalies
 
-# ----- Optional AI Assistant (only if assistant.py exists) -----
+# Optional AI assistant router
 try:
     from .assistant import router as assistant_router
     ASSISTANT_ENABLED = True
 except ImportError:
     ASSISTANT_ENABLED = False
 
-# ----- App Initialization -----
+# Initialize DB & app
 Base.metadata.create_all(bind=engine)
-app = FastAPI(title="QBO Financial Analysis Agent")
+app = FastAPI(title="Peregrine CFO")  # Branding
 
-# ----- Routers -----
+# Routers
 app.include_router(qbo_auth_router)
-
 if ASSISTANT_ENABLED:
     app.include_router(assistant_router)
 
-# ----- Templates (HTML UI) -----
+# Templates
 templates = Jinja2Templates(directory="app/templates")
 
 
-# ----- Basic Routes -----
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
+@app.get("/companies")
+def list_companies(db: Session = Depends(get_db)):
+    """
+    Return all connected QBO companies with both realm_id and human-friendly name.
+    """
+    tokens = db.query(QBOToken).all()
+    companies = []
+
+    for t in tokens:
+        client = QBOClient(access_token=t.access_token, realm_id=t.realm_id)
+        name = t.realm_id
+        try:
+            info = client.get_company_info()
+            # QBO typically returns CompanyInfo.CompanyName
+            name = (
+                info.get("CompanyInfo", {}).get("CompanyName")
+                or name
+            )
+        except Exception:
+            # If API fails, fall back to realm_id
+            name = t.realm_id
+
+        companies.append({"realm_id": t.realm_id, "name": name})
+
+    return companies
+
+
+@app.get("/assistant/ui")
+def assistant_ui(request: Request):
+    return templates.TemplateResponse("assistant.html", {"request": request})
+
+
 # ----- Analysis Routes -----
+
 @app.get("/analysis/invoices-summary")
 def get_invoices_summary(limit: int = 50, db: Session = Depends(get_db)):
     try:
@@ -102,13 +132,7 @@ def get_ar_aging(limit: int = 1000, db: Session = Depends(get_db)):
 def get_transaction_anomalies(
     limit: int = 1000,
     z_threshold: float = 2.5,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     client = get_qbo_client_from_db(db)
     return transaction_anomalies(client, limit, z_threshold)
-
-
-# ----- HTML UI -----
-@app.get("/assistant/ui")
-def assistant_ui(request: Request):
-    return templates.TemplateResponse("assistant.html", {"request": request})
