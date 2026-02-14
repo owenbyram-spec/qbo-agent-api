@@ -14,28 +14,27 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class AssistantQuery(BaseModel):
     question: str
-    realm_id: str  # currently unused, kept for future multi-company support
+    realm_id: str  # now used to select the company
+
 
 @router.post("/query")
 def ask_ai(body: AssistantQuery, db: Session = Depends(get_db)):
-    # Get QBO client (currently first token / sandbox)
-    qbo = get_qbo_client_from_db(db)
+    # Use the selected company (realm_id)
+    qbo = get_qbo_client_from_db(db, body.realm_id)
 
-    # Pull vendor spend data from QBO
+    # Example analysis: vendor spend
     vendor_data = vendor_spend_summary(qbo)
 
-    # Call OpenAI, but fail gracefully if quota hits again
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",  # adjust if you have a different model
+            model="gpt-4o-mini",  # or gpt-4.1 if available
             messages=[
                 {
                     "role": "system",
                     "content": (
                         "You are an expert financial analyst. "
-                        "Use the provided QuickBooks vendor spend data "
-                        "to answer the user's question. "
-                        "Be concise and business-focused."
+                        "Use the provided QuickBooks data to answer the user's question. "
+                        "Be concise, clear, and business-focused."
                     ),
                 },
                 {
@@ -47,14 +46,12 @@ def ask_ai(body: AssistantQuery, db: Session = Depends(get_db)):
                 },
             ],
         )
-
-        # ✅ Correct way to get the content with OpenAI v2 client
+        # OpenAI v2 style: message.content, not ["content"]
         answer = response.choices[0].message.content
-
     except RateLimitError:
         answer = (
-            "The AI analysis is temporarily unavailable because the OpenAI API "
-            "returned a rate limit or quota error. Here is the raw vendor data instead."
+            "The AI analysis is temporarily unavailable due to OpenAI rate limits "
+            "or quota. Here is the raw vendor data instead."
         )
 
     return {
