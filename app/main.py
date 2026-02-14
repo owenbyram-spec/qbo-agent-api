@@ -104,3 +104,11 @@ def get_transaction_anomalies(
 ):
     client = get_qbo_client_from_db(db)
     return transaction_anomalies(client, limit, z_threshold)
+    from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
+templates = Jinja2Templates(directory="app/templates")
+
+@app.get("/assistant/ui")
+def assistant_ui(request: Request):
+    return templates.TemplateResponse("assistant.html", {"request": request})
