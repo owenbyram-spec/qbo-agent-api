@@ -15,6 +15,8 @@ from .analysis.cogs_anomaly import cogs_anomalies
 from .analysis.cashflow_forecast import cashflow_forecast
 from .analysis.ar_aging import ar_aging
 from .analysis.anomalies import transaction_anomalies
+from .assistant import router as assistant_router
+app.include_router(assistant_router)
 
 # Create DB tables at startup
 Base.metadata.create_all(bind=engine)
