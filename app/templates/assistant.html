@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <title>Peregrine CFO</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Font -->
+    https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap
 
-    <!-- Favicon (Falcon head logo you uploaded to /app/static/) -->
-    <link rel="icon" type="image/png" href="/static/peregrine-logo.png" />
+    <!-- Favicon (falcon logo in app/static/peregrine-logo.png) -->
+    /static/peregrine-logo.png
 
     <style>
         :root {
@@ -28,7 +28,7 @@
             --assistant-bubble: #0D1117;
 
             --glow-accent: 0 0 18px rgba(31, 78, 115, 0.6);
-            --glow-soft: 0 0 12px rgba(31, 78, 115, 0.35);
+            --glow-soft: 0 0 12px rgba(31, 78, 115, 0.28);
         }
 
         * { box-sizing: border-box; }
@@ -41,9 +41,10 @@
         }
 
         .app-shell {
-            max-width: 1300px;
-            margin: 24px auto;
-            padding: 0 12px;
+            max-width: 1600px; /* wider than before */
+            width: 100%;
+            margin: 20px auto;
+            padding: 0 20px;
         }
 
         .top-bar {
@@ -58,11 +59,7 @@
             box-shadow: 0 20px 25px -20px rgba(0,0,0,0.5);
         }
 
-        .top-left {
-            display: flex;
-            flex-direction: column;
-        }
-
+        .top-left { display: flex; flex-direction: column; }
         .top-title { font-size: 1.3rem; font-weight: 600; }
         .top-subtitle { font-size: .85rem; color: var(--text-muted); }
 
@@ -95,11 +92,11 @@
 
         .btn:disabled { opacity:.5; cursor:not-allowed; }
 
-        /* Grid layout */
+        /* Layout */
         .content-shell {
             display:grid;
-            grid-template-columns:260px 1fr;
-            gap:16px;
+            grid-template-columns:280px 1fr;
+            gap:18px;
         }
 
         .panel {
@@ -109,38 +106,41 @@
             box-shadow:0 20px 25px -20px rgba(0,0,0,0.5);
         }
 
-        /* Prompts */
-        .prompts-panel { padding:14px 16px; }
-
-        .prompts-title { font-size:.95rem; font-weight:500; }
-        .prompts-subtitle { font-size:.78rem; color:var(--text-muted); }
+        /* Prompts panel – now white */
+        .prompts-panel {
+            padding:16px;
+            background:#ffffff;
+            color:#111827;
+        }
+        .prompts-panel .prompts-title { font-weight:600; font-size:.95rem; }
+        .prompts-panel .prompts-subtitle { font-size:.8rem; color:#4b5563; }
 
         .prompt-group { margin-top:12px; }
-
         .prompt-group-title {
             font-size:.75rem;
             text-transform:uppercase;
-            color:var(--text-muted);
+            color:#9ca3af;
             margin-bottom:4px;
         }
 
         .prompt-chip {
             display:inline-block;
-            background:rgba(15,23,42,.96);
+            background:#f3f4f6;
             padding:7px 12px;
             margin:6px 6px 0 0;
             border-radius:999px;
             font-size:.82rem;
             cursor:pointer;
             border:none;
+            color:#111827;
         }
 
         .prompt-chip:hover {
-            background:rgba(31,78,115,.4);
-            box-shadow:0 0 0 1px var(--accent-soft);
+            background:#e5e7eb;
+            box-shadow:0 0 0 1px rgba(31,78,115,.25);
         }
 
-        /* Chat Panel */
+        /* Chat panel */
         .chat-panel { padding:14px 16px; display:flex; flex-direction:column; }
 
         .chat-title { font-size:1.1rem; font-weight:600; }
@@ -172,6 +172,7 @@
             margin-left:auto;
             background:var(--user-bubble-gradient);
             color:#EAF4FF;
+            box-shadow:var(--glow-soft);
         }
 
         .message.assistant {
@@ -180,8 +181,8 @@
             border:1px solid var(--border-subtle);
         }
 
-        /* Typing bubble */
         .message.typing {
+            margin-right:auto;
             background:#f9fafb;
             color:#020617;
             display:flex;
@@ -197,7 +198,6 @@
             animation:typingBlink 1s infinite ease-in-out;
             opacity:.55;
         }
-
         .typing-dot:nth-child(2){ animation-delay:.15s; }
         .typing-dot:nth-child(3){ animation-delay:.3s; }
 
@@ -229,7 +229,6 @@
 
 <body>
     <div class="app-shell">
-
         <!-- TOP BAR -->
         <div class="top-bar">
             <div class="top-left">
@@ -249,33 +248,32 @@
         </div>
 
         <div class="content-shell">
-
             <!-- PROMPTS -->
             <div class="panel prompts-panel">
                 <div class="prompts-title">Suggested prompts</div>
                 <div class="prompts-subtitle">What do you want to dig into?</div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Vendor & Spend</div>
+                    <div class="prompt-group-title">Vendor &amp; Spend</div>
                     <div class="prompt-chip" onclick="usePrompt('Who are my top 5 vendors by spend this month?')">Top 5 vendors this month</div>
                     <div class="prompt-chip" onclick="usePrompt('Has my vendor concentration risk increased over the last 3 months?')">Vendor concentration risk</div>
                     <div class="prompt-chip" onclick="usePrompt('Which vendors had the biggest MoM increase?')">Vendor MoM increases</div>
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Customers & Revenue</div>
+                    <div class="prompt-group-title">Customers &amp; Revenue</div>
                     <div class="prompt-chip" onclick="usePrompt('Who are my most profitable customers?')">Top profitable customers</div>
-                    <div class="prompt-chip" onclick="usePrompt('Which customers drove most revenue last quarter?')">Revenue concentration</div>
+                    <div class="prompt-chip" onclick="usePrompt('Which customers drove the majority of revenue last quarter?')">Revenue concentration</div>
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Margins & COGS</div>
+                    <div class="prompt-group-title">Margins &amp; COGS</div>
                     <div class="prompt-chip" onclick="usePrompt('Where have margins eroded recently?')">Margin erosion</div>
-                    <div class="prompt-chip" onclick="usePrompt('Any anomalies in COGS last 6 months?')">COGS anomalies</div>
+                    <div class="prompt-chip" onclick="usePrompt('Any anomalies in COGS over the last 6 months?')">COGS anomalies</div>
                 </div>
 
                 <div class="prompt-group">
-                    <div class="prompt-group-title">Cash Flow & AR</div>
+                    <div class="prompt-group-title">Cash Flow &amp; AR</div>
                     <div class="prompt-chip" onclick="usePrompt('Summarize cash flow trends and risks.')">Cash flow trend</div>
                     <div class="prompt-chip" onclick="usePrompt('Give me my AR aging breakdown.')">AR aging</div>
                 </div>
@@ -287,7 +285,7 @@
                 </div>
             </div>
 
-            <!-- CHAT PANE -->
+            <!-- CHAT -->
             <div class="panel chat-panel">
                 <div class="chat-header">
                     <div class="chat-title">Conversation</div>
@@ -305,7 +303,6 @@
             </div>
         </div>
     </div>
-
 
     <script>
         let currentRealmId = null;
@@ -332,8 +329,8 @@
 
                 data.forEach((c, i) => {
                     const opt = document.createElement("option");
-                    opt.value = c.realm_id;
-                    opt.textContent = c.name;
+                    opt.value = c.realm_id;   // value = ID
+                    opt.textContent = c.name; // label = NAME
                     if (i === 0) {
                         currentRealmId = c.realm_id;
                         opt.selected = true;
@@ -347,6 +344,8 @@
 
             } catch (err) {
                 console.error(err);
+                document.getElementById("companyStatus").textContent =
+                    "Error loading companies from backend.";
             }
         }
 
@@ -358,7 +357,8 @@
             const select = document.getElementById("companySelect");
             currentRealmId = select.value;
             const name = select.options[select.selectedIndex].text;
-            document.getElementById("companyStatus").textContent = `Active company: ${name}`;
+            document.getElementById("companyStatus").textContent =
+                `Active company: ${name}`;
         }
 
         function appendMessage(role, text) {
@@ -372,6 +372,7 @@
 
         function usePrompt(text) {
             document.getElementById("questionInput").value = text;
+            document.getElementById("questionInput").focus();
         }
 
         function showTypingBubble() {
@@ -395,14 +396,21 @@
         async function sendQuestion() {
             const input = document.getElementById("questionInput");
             const question = input.value.trim();
+            const status = document.getElementById("assistantStatus");
+            const askButton = document.getElementById("askButton");
+
+            if (!currentRealmId) {
+                status.textContent = "Please connect a QuickBooks company first.";
+                return;
+            }
             if (!question) return;
 
             appendMessage("user", question);
             input.value = "";
+            status.textContent = "";
 
             showTypingBubble();
 
-            const askButton = document.getElementById("askButton");
             askButton.disabled = true;
             askButton.textContent = "Thinking…";
 
@@ -422,17 +430,27 @@
                 appendMessage("assistant", data.answer || JSON.stringify(data, null, 2));
 
             } catch (err) {
+                console.error(err);
                 removeTypingBubble();
                 appendMessage("assistant", "Error contacting Peregrine CFO.");
-                console.error(err);
             }
 
             askButton.disabled = false;
             askButton.textContent = "Ask";
         }
 
-        window.onload = loadCompanies;
-    </script>
+        // Hot key: Enter = ask, Shift+Enter = newline
+        document.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("questionInput");
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendQuestion();
+                }
+            });
 
+            loadCompanies();
+        });
+    </script>
 </body>
 </html>
