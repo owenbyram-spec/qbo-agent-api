@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from .db import Base, engine, get_db
@@ -25,16 +26,18 @@ try:
 except ImportError:
     ASSISTANT_ENABLED = False
 
-# Initialize DB & app
+# --- App init ---
 Base.metadata.create_all(bind=engine)
-app = FastAPI(title="Peregrine CFO")  # Branding
+app = FastAPI(title="Peregrine CFO")
+
+# Static files (logo, etc.)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Routers
 app.include_router(qbo_auth_router)
 if ASSISTANT_ENABLED:
     app.include_router(assistant_router)
 
-# Templates
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -46,7 +49,10 @@ def health():
 @app.get("/companies")
 def list_companies(db: Session = Depends(get_db)):
     """
-    Return all connected QBO companies with both realm_id and human-friendly name.
+    Return all connected QBO companies with:
+      - realm_id
+      - name (CompanyName when available)
+      - connected: True if token still works against QBO, else False
     """
     tokens = db.query(QBOToken).all()
     companies = []
@@ -54,18 +60,23 @@ def list_companies(db: Session = Depends(get_db)):
     for t in tokens:
         client = QBOClient(access_token=t.access_token, realm_id=t.realm_id)
         name = t.realm_id
+        connected = False
+
         try:
             info = client.get_company_info()
-            # QBO typically returns CompanyInfo.CompanyName
-            name = (
-                info.get("CompanyInfo", {}).get("CompanyName")
-                or name
-            )
+            name = info.get("CompanyInfo", {}).get("CompanyName") or name
+            connected = True
         except Exception:
-            # If API fails, fall back to realm_id
-            name = t.realm_id
+            # Token expired or QBO call failed
+            connected = False
 
-        companies.append({"realm_id": t.realm_id, "name": name})
+        companies.append(
+            {
+                "realm_id": t.realm_id,
+                "name": name,
+                "connected": connected,
+            }
+        )
 
     return companies
 
@@ -75,7 +86,7 @@ def assistant_ui(request: Request):
     return templates.TemplateResponse("assistant.html", {"request": request})
 
 
-# ----- Analysis Routes -----
+# --- Analysis routes ---
 
 @app.get("/analysis/invoices-summary")
 def get_invoices_summary(limit: int = 50, db: Session = Depends(get_db)):
