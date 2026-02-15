@@ -5,10 +5,11 @@
     <title>Peregrine CFO</title>
 
     <!-- Google Font -->
-    https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
 
     <!-- Favicon (falcon logo in app/static/peregrine-logo.png) -->
-    /static/peregrine-logo.png
+    <link rel="icon" type="image/png" href="/static/peregrine-logo.png" />
 
     <style>
         :root {
@@ -19,7 +20,6 @@
             --text-main: #f0f4f8;
             --text-muted: #8A9AB0;
 
-            /* Matte Blue Palette */
             --accent: #1F4E73;
             --accent-dark: #163B56;
             --accent-soft: rgba(31, 78, 115, 0.35);
@@ -41,7 +41,7 @@
         }
 
         .app-shell {
-            max-width: 1600px; /* wider than before */
+            max-width: 1600px;
             width: 100%;
             margin: 20px auto;
             padding: 0 20px;
@@ -59,17 +59,17 @@
             box-shadow: 0 20px 25px -20px rgba(0,0,0,0.5);
         }
 
-        .top-left { display: flex; flex-direction: column; }
-        .top-title { font-size: 1.3rem; font-weight: 600; }
-        .top-subtitle { font-size: .85rem; color: var(--text-muted); }
+        .top-left { display:flex; flex-direction:column; }
+        .top-title { font-size:1.3rem; font-weight:600; }
+        .top-subtitle { font-size:.85rem; color:var(--text-muted); }
 
         .top-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display:flex;
+            align-items:center;
+            gap:10px;
         }
 
-        .company-label { font-size: .80rem; color: var(--text-muted); }
+        .company-label { font-size:.80rem; color:var(--text-muted); }
 
         .company-select {
             padding: 8px 10px;
@@ -80,19 +80,17 @@
         }
 
         .btn {
-            padding: 8px 14px;
-            font-weight: 600;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-            color: white;
-            cursor: pointer;
-            box-shadow: var(--glow-accent);
+            padding:8px 14px;
+            font-weight:600;
+            border-radius:999px;
+            border:none;
+            background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color:white;
+            cursor:pointer;
+            box-shadow:var(--glow-accent);
         }
-
         .btn:disabled { opacity:.5; cursor:not-allowed; }
 
-        /* Layout */
         .content-shell {
             display:grid;
             grid-template-columns:280px 1fr;
@@ -100,20 +98,19 @@
         }
 
         .panel {
-            background: var(--bg-panel);
             border-radius:12px;
             border:1px solid var(--border-subtle);
             box-shadow:0 20px 25px -20px rgba(0,0,0,0.5);
         }
 
-        /* Prompts panel – now white */
+        /* Prompts panel – white for contrast */
         .prompts-panel {
             padding:16px;
             background:#ffffff;
             color:#111827;
         }
-        .prompts-panel .prompts-title { font-weight:600; font-size:.95rem; }
-        .prompts-panel .prompts-subtitle { font-size:.8rem; color:#4b5563; }
+        .prompts-title { font-weight:600; font-size:.95rem; }
+        .prompts-subtitle { font-size:.8rem; color:#4b5563; }
 
         .prompt-group { margin-top:12px; }
         .prompt-group-title {
@@ -134,15 +131,18 @@
             border:none;
             color:#111827;
         }
-
         .prompt-chip:hover {
             background:#e5e7eb;
             box-shadow:0 0 0 1px rgba(31,78,115,.25);
         }
 
         /* Chat panel */
-        .chat-panel { padding:14px 16px; display:flex; flex-direction:column; }
-
+        .chat-panel {
+            padding:14px 16px;
+            background:var(--bg-panel);
+            display:flex;
+            flex-direction:column;
+        }
         .chat-title { font-size:1.1rem; font-weight:600; }
         .chat-subtitle { font-size:.80rem; color:var(--text-muted); }
 
@@ -167,20 +167,17 @@
             white-space:pre-wrap;
             line-height:1.45;
         }
-
         .message.user {
             margin-left:auto;
             background:var(--user-bubble-gradient);
             color:#EAF4FF;
             box-shadow:var(--glow-soft);
         }
-
         .message.assistant {
             margin-right:auto;
             background:var(--assistant-bubble);
             border:1px solid var(--border-subtle);
         }
-
         .message.typing {
             margin-right:auto;
             background:#f9fafb;
@@ -211,7 +208,6 @@
             gap:10px;
             margin-top:12px;
         }
-
         textarea {
             flex:1;
             height:64px;
@@ -222,7 +218,6 @@
             border:1px solid var(--border-subtle);
             resize:none;
         }
-
         .status-line { font-size:.75rem; color:var(--text-muted); margin-top:6px; }
     </style>
 </head>
@@ -327,6 +322,8 @@
                     return;
                 }
 
+                let anyConnected = false;
+
                 data.forEach((c, i) => {
                     const opt = document.createElement("option");
                     opt.value = c.realm_id;   // value = ID
@@ -336,11 +333,17 @@
                         opt.selected = true;
                         status.textContent = `Active company: ${c.name}`;
                     }
+                    if (c.connected) anyConnected = true;
                     select.appendChild(opt);
                 });
 
-                connectBtn.textContent = "✓ Connected to QuickBooks";
-                connectBtn.disabled = true;
+                if (anyConnected) {
+                    connectBtn.textContent = "✓ Connected to QuickBooks";
+                    connectBtn.disabled = true;
+                } else {
+                    connectBtn.textContent = "Reconnect to QuickBooks";
+                    connectBtn.disabled = false;
+                }
 
             } catch (err) {
                 console.error(err);
@@ -371,8 +374,9 @@
         }
 
         function usePrompt(text) {
-            document.getElementById("questionInput").value = text;
-            document.getElementById("questionInput").focus();
+            const input = document.getElementById("questionInput");
+            input.value = text;
+            input.focus();
         }
 
         function showTypingBubble() {
@@ -439,7 +443,7 @@
             askButton.textContent = "Ask";
         }
 
-        // Hot key: Enter = ask, Shift+Enter = newline
+        // Hotkey: Enter=Ask, Shift+Enter=newline
         document.addEventListener("DOMContentLoaded", () => {
             const input = document.getElementById("questionInput");
             input.addEventListener("keydown", (e) => {
