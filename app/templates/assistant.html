@@ -4,26 +4,33 @@
     <meta charset="UTF-8" />
     <title>Peregrine CFO</title>
 
-    <!-- Modern font -->
+    <!-- Google Font (no visible URL text) -->
     https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap
+
+    <!-- Favicon (falcon head logo) -->
+    /static/peregrine-logo.png
 
     <style>
         :root {
-            --bg-main: #050509;
-            --bg-panel: #050509;
-            --bg-subpanel: #0b0f19;
-            --border-subtle: #1f2937;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
+            --bg-main: #05070A;
+            --bg-panel: #05070A;
+            --bg-subpanel: #0C131D;
+            --border-subtle: #1E2935;
+            --text-main: #f0f4f8;
+            --text-muted: #8A9AB0;
 
-            /* Orange accent palette */
-            --accent: #f97316;
-            --accent-2: #ea580c;
-            --accent-soft: rgba(249,115,22,0.25);
+            /* Matte Blue Palette (A + C) */
+            --accent: #1F4E73;
+            --accent-dark: #163B56;
+            --accent-soft: rgba(31, 78, 115, 0.35);
 
             /* Chat bubbles */
-            --user-bubble-gradient: linear-gradient(135deg, #f97316, #ea580c);
-            --assistant-bubble: #0b0f19;
+            --user-bubble-gradient: linear-gradient(135deg, #1F4E73, #163B56);
+            --assistant-bubble: #0D1117;
+
+            /* Shadows */
+            --glow-accent: 0 0 18px rgba(31, 78, 115, 0.6);
+            --glow-soft: 0 0 12px rgba(31, 78, 115, 0.28);
         }
 
         * { box-sizing: border-box; }
@@ -46,7 +53,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #050509;
+            background: #05070A;
             border-radius: 12px;
             padding: 14px 18px;
             border: 1px solid var(--border-subtle);
@@ -97,9 +104,9 @@
             border: none;
             font-size: 0.85rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #f97316, #ea580c);
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             color: white;
-            box-shadow: 0 10px 20px rgba(249,115,22,0.5);
+            box-shadow: var(--glow-accent);
         }
 
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -149,14 +156,14 @@
             padding: 7px 12px;
             font-size: 0.8rem;
             border-radius: 999px;
-            border: none; /* ⛔ no border around prompts */
+            border: none;
             background: rgba(15,23,42,0.95);
             color: var(--text-main);
             cursor: pointer;
         }
 
         .prompt-chip:hover {
-            background: rgba(249,115,22,0.18);
+            background: rgba(31, 78, 115, 0.25);
             box-shadow: 0 0 0 1px var(--accent-soft);
         }
 
@@ -186,8 +193,8 @@
             padding: 12px;
             border-radius: 10px;
             background:
-                radial-gradient(circle at top left, rgba(249,115,22,0.16), transparent 40%),
-                radial-gradient(circle at bottom right, rgba(248,250,252,0.06), transparent 40%),
+                radial-gradient(circle at top left, rgba(31,78,115,0.18), transparent 40%),
+                radial-gradient(circle at bottom right, rgba(148,163,184,0.09), transparent 40%),
                 #020617;
             border: 1px solid var(--border-subtle);
             overflow-y: auto;
@@ -207,8 +214,8 @@
         .message.user {
             margin-left: auto;
             background: var(--user-bubble-gradient);
-            color: #fff7ed;
-            box-shadow: 0 10px 30px rgba(249,115,22,0.5);
+            color: #EAF4FF;
+            box-shadow: var(--glow-soft);
         }
 
         .message.assistant {
@@ -218,8 +225,9 @@
             border: 1px solid var(--border-subtle);
         }
 
-        /* Typing bubble (white) */
+        /* Typing bubble (white against dark bg) */
         .message.typing {
+            margin-right: auto;
             background: #f9fafb;
             color: #020617;
             display: inline-flex;
@@ -287,7 +295,7 @@
                 <select id="companySelect" class="company-select" onchange="onCompanyChange()">
                     <option value="">Loading companies…</option>
                 </select>
-                <button class="btn" onclick="connectQuickBooks()">Connect to QuickBooks</button>
+                <button class="btn" id="connectBtn" onclick="connectQuickBooks()">Connect to QuickBooks</button>
             </div>
         </div>
 
@@ -386,6 +394,7 @@
                 const data = await res.json();
                 const select = document.getElementById('companySelect');
                 const status = document.getElementById('companyStatus');
+                const connectBtn = document.getElementById('connectBtn');
 
                 select.innerHTML = '';
 
@@ -394,15 +403,18 @@
                     opt.value = '';
                     opt.textContent = 'No companies connected';
                     select.appendChild(opt);
+
                     currentRealmId = null;
                     status.textContent = 'No companies connected. Use “Connect to QuickBooks” to add one.';
+                    connectBtn.textContent = 'Connect to QuickBooks';
+                    connectBtn.disabled = false;
                     return;
                 }
 
                 data.forEach((c, idx) => {
                     const opt = document.createElement('option');
                     opt.value = c.realm_id;
-                    opt.textContent = c.name; // company name
+                    opt.textContent = c.name;
                     if (idx === 0) {
                         opt.selected = true;
                         currentRealmId = c.realm_id;
@@ -410,6 +422,11 @@
                     }
                     select.appendChild(opt);
                 });
+
+                // If at least one company is connected, show checkmark-style button
+                connectBtn.textContent = '✓ Connected to QuickBooks';
+                connectBtn.disabled = true;
+
             } catch (err) {
                 console.error(err);
                 document.getElementById('companyStatus').textContent =
@@ -427,104 +444,3 @@
             const status = document.getElementById('companyStatus');
             const selectedName = select.options[select.selectedIndex]?.text || '';
 
-            if (currentRealmId && selectedName) {
-                status.textContent = `Active company: ${selectedName}`;
-            } else {
-                status.textContent = 'No company selected.';
-            }
-        }
-
-        function appendMessage(role, text) {
-            const messages = document.getElementById('messages');
-            const div = document.createElement('div');
-            div.className = 'message ' + role;
-            div.textContent = text;
-            messages.appendChild(div);
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        function showTypingBubble() {
-            const messages = document.getElementById('messages');
-            typingBubble = document.createElement('div');
-            typingBubble.className = 'message assistant typing';
-
-            const dot1 = document.createElement('div');
-            const dot2 = document.createElement('div');
-            const dot3 = document.createElement('div');
-            dot1.className = 'typing-dot';
-            dot2.className = 'typing-dot';
-            dot3.className = 'typing-dot';
-
-            typingBubble.appendChild(dot1);
-            typingBubble.appendChild(dot2);
-            typingBubble.appendChild(dot3);
-
-            messages.appendChild(typingBubble);
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        function removeTypingBubble() {
-            if (typingBubble && typingBubble.parentNode) {
-                typingBubble.parentNode.removeChild(typingBubble);
-            }
-            typingBubble = null;
-        }
-
-        function usePrompt(text) {
-            const input = document.getElementById('questionInput');
-            input.value = text;
-            input.focus();
-        }
-
-        async function sendQuestion() {
-            const input = document.getElementById('questionInput');
-            const question = input.value.trim();
-            const status = document.getElementById('assistantStatus');
-            const askButton = document.getElementById('askButton');
-
-            if (!currentRealmId) {
-                status.textContent = 'Please connect a QuickBooks company first.';
-                return;
-            }
-            if (!question) return;
-
-            appendMessage('user', question);
-            input.value = '';
-            status.textContent = '';
-            askButton.disabled = true;
-            askButton.textContent = 'Thinking…';
-
-            showTypingBubble();
-
-            try {
-                const res = await fetch('/assistant/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        realm_id: currentRealmId,
-                        question: question
-                    })
-                });
-
-                const data = await res.json();
-                removeTypingBubble();
-
-                if (data.answer) {
-                    appendMessage('assistant', data.answer);
-                } else {
-                    appendMessage('assistant', JSON.stringify(data, null, 2));
-                }
-            } catch (err) {
-                console.error(err);
-                removeTypingBubble();
-                appendMessage('assistant', 'Error contacting Peregrine CFO assistant.');
-            } finally {
-                askButton.disabled = false;
-                askButton.textContent = 'Ask';
-            }
-        }
-
-        window.onload = loadCompanies;
-    </script>
-</body>
-</html>
